@@ -128,10 +128,9 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     
   /* ACCL CODE */
-    double forward_gain = 0.009;
+    double forward_gain = 0.007;
     double reverse_gain = -0.5;
-    // double greatestChange = 0.025;
-    double curr = getMotorAverages();
+    double curr = output;
     double targ = (-stick.getY()) * 0.8;
 
     if(Math.abs(targ) < 0.2) {
