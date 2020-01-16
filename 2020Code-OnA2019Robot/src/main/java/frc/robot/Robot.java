@@ -7,7 +7,16 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -32,6 +41,10 @@ public class Robot extends TimedRobot {
   public static SpeedControllerGroup Left = new SpeedControllerGroup(LeftMaster, LeftSlave);
 
   public static DifferentialDrive drive = new DifferentialDrive(Left, Right);
+
+  public static Joystick stick = new Joystick(0);
+
+  public static Compressor comp = new Compressor();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -82,6 +95,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+    comp.start();
   }
 
   /**
@@ -100,13 +114,62 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    comp.stop();
   }
 
-  /**
-   * This function is called periodically during operator control.
-   */
-  @Override
+  public double getMotorAverages() {
+    return (RightMaster.getMotorOutputPercent() + LeftMaster.getMotorOutputPercent()) / 2;
+  }
+
+  public double output = 0;
+  public double i = 0;
+  public double change = 0;
+
   public void teleopPeriodic() {
+    
+  /* ACCL CODE */
+    double forward_gain = 0.009;
+    double reverse_gain = -0.5;
+    // double greatestChange = 0.025;
+    double curr = getMotorAverages();
+    double targ = (-stick.getY()) * 0.8;
+
+    if(Math.abs(targ) < 0.2) {
+      targ = 0.0;
+    }
+    
+    if (targ == 0.0) {
+      change = (reverse_gain * curr);
+    } else {
+      change = -(forward_gain * (targ - curr));
+    }
+
+    output = output + change;
+
+    if(output > 1) {
+      output = 1;
+    } else if (output < -1) {
+      output = -1;
+    }
+    
+    // drive.set(ControlMode.PercentOutput, output);
+    if(Math.abs(output) > 0.3) {
+      drive.arcadeDrive(output, stick.getZ());
+    } else {
+      drive.arcadeDrive(0, stick.getZ());
+    }
+
+    i = i + 1;
+    SmartDashboard.putNumber("curr - Motor", curr);
+    SmartDashboard.putNumber("targ - Joystick", targ);
+    SmartDashboard.putNumber("Output", output);
+    SmartDashboard.putNumber("change", change);
+    SmartDashboard.putNumber("Iterations", i);
+    SmartDashboard.putNumber("RightVolts", RightMaster.getMotorOutputVoltage());
+    SmartDashboard.putNumber("rightpercent", RightMaster.getMotorOutputPercent());
+    
+
+    // drive.arcadeDrive(stick.getY(), stick.getZ() * 0.8);
   }
 
   @Override

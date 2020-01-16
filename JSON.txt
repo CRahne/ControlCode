@@ -1,6 +1,10 @@
 Talon SRX - http://devsite.ctr-electronics.com/maven/release/com/ctre/phoenix/Phoenix-latest.json
 
+<<<<<<< HEAD
 NAVX Gyro - https://www.kauailabs.com/dist/frc/2020/navx_frc.json
 
 Rev Robotics Color Sensor - http://revrobotics.com/content/sw/color-sensor-v3/sdk/REVColorSensorV3.json
 
+=======
+NAVX Gyro - https://www.kauailabs.com/dist/frc/2020/navx_frc.json
+>>>>>>> d2e60aaa3c7ce3d944f9c0a7454a68e26f973f6b
